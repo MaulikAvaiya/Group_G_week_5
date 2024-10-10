@@ -48,7 +48,7 @@ func getTaskById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(task)
 }
 
-// GetUser returns a user by ID
+// GetTask returns a task by ID
 func getTask(id int) (Task, bool) {
 	for _, task := range tasks {
 		if task.ID == id {
@@ -89,7 +89,6 @@ func updateTaskhandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	//	updatedTask.ID = id
 	if updateExistTask(id,&updatedTask) {
 		json.NewEncoder(w).Encode(updatedTask)
 	} else {
@@ -100,7 +99,6 @@ func updateExistTask(id int,updatedTask *Task) bool {
 	for i, task := range tasks {
 
 		if task.ID == id {
-			// tasks[i] = *updatedTask
 			tasks[i].Title = updatedTask.Title
 			tasks[i].Description = updatedTask.Description
 			tasks[i].Status = updatedTask.Status
@@ -142,11 +140,10 @@ func deleteExistingUser(id int) bool {
 	return false
 }
 func main() {
+	pNumber := ":8093"
 	http.HandleFunc("/gettasks", getTaskHandler)
 	http.HandleFunc("/createtask", createTaskHandler)
 	http.HandleFunc("/delete/", deleteTaskHandler) // New route for DELETE operation
-	pNumber := ":8093"
-	// http.HandleFunc("/updatetask", updateExistTask)
 	http.HandleFunc("/updatetask/", updateTaskhandler)
 	http.HandleFunc("/gettaskbyid/", getTaskById)
 	fmt.Printf("Server is running on the port: %s\n", pNumber)
