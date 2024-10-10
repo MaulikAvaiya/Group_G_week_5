@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type Task struct {
@@ -13,7 +15,7 @@ type Task struct {
 	Status      string `json:"status"` // "pending" or "completed"
 }
 
-// In-memory storage (simulating a database)
+// In-memory storage
 var tasks = []Task{}
 var taskId = 1
 
@@ -70,9 +72,40 @@ func updateExistTask(updatedTask *Task) bool {
 	return false
 }
 
+// Handler to delete a task by ID
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := strings.TrimPrefix(r.URL.Path, "/delete/")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	if deleteExistingUser(id) {
+		w.WriteHeader(http.StatusNoContent)
+
+	} else {
+		http.Error(w, "User not found", http.StatusNotFound)
+	}
+}
+func deleteExistingUser(id int) bool {
+	for i, task := range tasks {
+		if task.ID == id {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
 func main() {
 	http.HandleFunc("/gettasks", getTaskHandler)
 	http.HandleFunc("/createtask", createTaskHandler)
+	http.HandleFunc("/delete/", deleteTaskHandler) // New route for DELETE operation
 	pNumber := ":8092"
 	// http.HandleFunc("/updatetask", updateExistTask)
 	http.HandleFunc("/tasks/", updateTaskhandler)
