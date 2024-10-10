@@ -42,10 +42,40 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(task)
 }
 
+// Update the task by himani
+func updateTaskhandler(w http.ResponseWriter, r *http.Request) {
+	var updatedTask Task
+	if err := json.NewDecoder(r.Body).Decode(&updatedTask); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	//	updatedTask.ID = id
+	if updateExistTask(&updatedTask) {
+		json.NewEncoder(w).Encode(updatedTask)
+	} else {
+		http.Error(w, "Task not found", http.StatusNotFound)
+	}
+}
+func updateExistTask(updatedTask *Task) bool {
+	for i, task := range tasks {
+
+		if task.ID == updatedTask.ID {
+			// tasks[i] = *updatedTask
+			tasks[i].Title = updatedTask.Title
+			tasks[i].Description = updatedTask.Description
+			tasks[i].Status = updatedTask.Status
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	http.HandleFunc("/gettasks", getTaskHandler)
 	http.HandleFunc("/createtask", createTaskHandler)
 	pNumber := ":8092"
+	// http.HandleFunc("/updatetask", updateExistTask)
+	http.HandleFunc("/tasks/", updateTaskhandler)
 	fmt.Printf("Server is running on the port: %s\n", pNumber)
 	http.ListenAndServe(pNumber, nil)
 }
